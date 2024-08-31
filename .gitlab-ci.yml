@@ -1,0 +1,37 @@
+stages:
+  - deploy
+
+
+after_script:
+  - docker image prune -f
+  - echo "部署成功!"
+
+
+# 测试环境
+beta:
+  stage: deploy
+  script:
+    - docker build -t hilton_server_beta_image -f ./Dockerfile .
+    - if [[ $(docker ps -aq --filter name=hilton_server_beta) ]];then docker rm -f hilton_server_beta;fi
+    - docker run
+      --restart=always
+      -d -p 3000:3000 --name hilton_server_beta hilton_server_beta_image
+  tags:
+    - hilton_server
+  only:
+    - dev
+
+# 生产环境
+prod:
+  stage: deploy
+  script:
+    - docker build -t hilton_server_prod_image -f ./Dockerfile .
+    - if [[ $(docker ps -aq --filter name=hilton_server_prod) ]];then docker rm -f hilton_server_prod;fi
+    - docker run
+      --restart=always
+      -d -p 8000:3000 --name hilton_server_prod hilton_server_prod_image
+  tags:
+    - hilton_server
+  only:
+    - main
+
