@@ -17,13 +17,13 @@ export class ReservationResolver {
   }
 
   @Query(() => [Reservation], { name: 'reservation' })
-  async findAll() {
-    return await this.reservationService.findAll()
+  async findAll(@Args('createReservationInput') filter: CreateReservationInput) {
+    return await this.reservationService.getAllReservation(filter)
   }
 
   @Query(() => Reservation, { name: 'reservation' })
   async findOne(@Args('name', { type: () => String }) name: string) {
-    return await this.reservationService.findOne(name)
+    return await this.reservationService.getReservationById(name)
   }
 
   @Mutation(() => Reservation)

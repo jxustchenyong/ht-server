@@ -28,11 +28,7 @@ export class ReservationService implements OnModuleInit {
       status: input.status
     }
     let guid = uuidv4()
-    let q =
-      'UPSERT INTO _default (KEY, VALUE)\n' +
-      `VALUES ("${guid}", {"name": "${resInfo.name}", "contact_info": "${resInfo.contact_info}", "arrival_time": "${resInfo.arrival_time}", "table_size_info": "${resInfo.table_size_info}", "status": "${resInfo.status}"})` +
-      'RETURNING VALUE name;'
-    const reservation = await this.bucket.scope('_default').query(q)
+    const reservation = await this.collection.upsert(guid, resInfo)
     return reservation
   }
 
@@ -47,18 +43,23 @@ export class ReservationService implements OnModuleInit {
     return reservation
   }
 
-  async findAll() {
+  async updateReservationStatus(phone_number: string, body) {
+    const ori = await this.collection.get(body.id)
+    const value = {
+      status: body.status
+    }
+    const reservation = await this.collection.replace(body.id, Object.assign(ori.content, value))
+    return reservation
+  }
+
+  async getAllReservation(filter) {
     const reservation = await this.bucket.scope('_default').query('SELECT * FROM `_default`')
     return reservation.rows
   }
 
-  async findOne(name: string) {
-    let q =
-      'SELECT id, name, status, contact_info, arrival_time, table_size_info FROM `_default`' +
-      ` where name = '${name}' order by id desc` +
-      ' limit 1'
-    const reservation = await this.bucket.scope('_default').query(q)
-    return reservation.rows[0]
+  async getReservationById(id: string) {
+    const reservation = await this.collection.get(id)
+    return reservation
   }
 
   update(name: string, updateReservationInput: UpdateReservationInput) {
