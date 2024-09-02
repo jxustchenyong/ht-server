@@ -27,12 +27,12 @@ export class ReservationResolver {
   }
 
   @Mutation(() => Reservation)
-  updateReservation(@Args('updateReservationInput') updateReservationInput: UpdateReservationInput) {
-    return this.reservationService.update(updateReservationInput.name, updateReservationInput)
+  async updateReservation(@Args('updateReservationInput') updateReservationInput: UpdateReservationInput) {
+    return await this.reservationService.updateReservation(updateReservationInput.name, updateReservationInput)
   }
 
   @Mutation(() => Reservation)
-  removeReservation(@Args('id', { type: () => Int }) id: number) {
-    return this.reservationService.remove(id)
+  async removeReservation(@Args('id', { type: () => Int }) id: number) {
+    return await this.reservationService.updateReservation('' + id, { status: -1 })
   }
 }

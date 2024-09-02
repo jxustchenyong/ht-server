@@ -22,7 +22,9 @@ export class ReservationService implements OnModuleInit {
 
   async createReservation(user, input: CreateReservationInput) {
     const now = dayjs().format('YYYY-MM-DD HH:mm:ss')
+    const guid = uuidv4()
     const resInfo = {
+      id: guid,
       name: user.name,
       phone_number: user.phone_number,
       contact_info: input.contact_info,
@@ -32,7 +34,6 @@ export class ReservationService implements OnModuleInit {
       create_time: now,
       update_time: now
     }
-    let guid = uuidv4()
     const reservation = await this.collection.upsert(guid, resInfo)
     return reservation
   }
@@ -59,8 +60,12 @@ export class ReservationService implements OnModuleInit {
     return reservation
   }
 
-  async getAllReservation(filter) {
-    let q = 'SELECT * FROM `_default` order by create_time desc'
+  async getAllReservation(filter, phone_number = '') {
+    let q = 'SELECT * FROM `_default`'
+    if (phone_number) {
+      q += ` where phone_number = '${phone_number}'`
+    }
+    q += ' order by create_time desc'
     if (filter.limit > 0) {
       q += ` limit ${filter.limit}`
     }
@@ -71,16 +76,11 @@ export class ReservationService implements OnModuleInit {
     return reservation.rows
   }
 
-  async getReservationById(id: string) {
+  async getReservationById(id: string, phone_number = '') {
     const reservation = await this.collection.get(id)
+    if (phone_number) {
+      if (reservation?.content?.phone_number != phone_number) return []
+    }
     return reservation
-  }
-
-  update(name: string, updateReservationInput: UpdateReservationInput) {
-    return `This action updates a #${name} reservation`
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} reservation`
   }
 }

@@ -75,7 +75,7 @@ export class ReservationController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Manage, Reservation))
   @UseGuards(AuthGuard('jwt'))
-  @Get()
+  @Get('admin')
   async getAllOrder(@Request() req, @Query() Query) {
     return await this.reservationService.getAllReservation(Query)
   }
@@ -84,14 +84,26 @@ export class ReservationController {
   @UseGuards(PoliciesGuard)
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Manage, Reservation))
   @UseGuards(AuthGuard('jwt'))
-  @Get(':id')
+  @Get('admin/:id')
   async getOrderById(@Param('id') id) {
     return await this.reservationService.getReservationById(id)
   }
 
+  // 访客查看所有
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Reservation))
   @UseGuards(AuthGuard('jwt'))
-  @Get('me')
+  @Get('guest')
   async getPersonOrder(@Request() req) {
-    return await this.reservationService.getReservationById(req.user.phone_number)
+    return await this.reservationService.getAllReservation(Query, req.user.phone_number)
+  }
+
+  // 访客查看单条
+  @UseGuards(PoliciesGuard)
+  @CheckPolicies((ability: AppAbility) => ability.can(Action.Read, Reservation))
+  @UseGuards(AuthGuard('jwt'))
+  @Get('guest/:id')
+  async getOrderByIdGuest(@Request() req, @Param('id') id) {
+    return await this.reservationService.getReservationById(id, req.user.phone_number)
   }
 }
