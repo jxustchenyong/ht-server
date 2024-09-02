@@ -3,6 +3,7 @@ import { CreateReservationInput } from './dto/create-reservation.input'
 import { UpdateReservationInput } from './dto/update-reservation.input'
 import { CouchBaseAdapterService } from 'src/couchbase/couch-base-adapter.service'
 import { Bucket, Cluster, Collection, QueryResult } from 'couchbase'
+import * as dayjs from 'dayjs'
 import { v4 as uuidv4 } from 'uuid'
 
 @Injectable()
@@ -19,13 +20,17 @@ export class ReservationService implements OnModuleInit {
     this.collection = this.bucket.scope('_default').collection('_default')
   }
 
-  async createReservation(phone_number, input: CreateReservationInput) {
+  async createReservation(user, input: CreateReservationInput) {
+    const now = dayjs().format('YYYY-MM-DD HH:mm:ss')
     const resInfo = {
-      name: phone_number,
+      name: user.name,
+      phone_number: user.phone_number,
       contact_info: input.contact_info,
       arrival_time: input.arrival_time,
       table_size_info: input.table_size_info,
-      status: input.status
+      status: input.status,
+      create_time: now,
+      update_time: now
     }
     let guid = uuidv4()
     const reservation = await this.collection.upsert(guid, resInfo)
@@ -33,11 +38,13 @@ export class ReservationService implements OnModuleInit {
   }
 
   async updateReservation(phone_number: string, body) {
+    const now = dayjs().format('YYYY-MM-DD HH:mm:ss')
     const ori = await this.collection.get(body.id)
     const value = {
       contact_info: body.contact_info,
       table_size_info: body.table_size_info,
-      arrival_time: body.arrival_time
+      arrival_time: body.arrival_time,
+      update_time: now
     }
     const reservation = await this.collection.replace(body.id, Object.assign(ori.content, value))
     return reservation
@@ -53,7 +60,14 @@ export class ReservationService implements OnModuleInit {
   }
 
   async getAllReservation(filter) {
-    const reservation = await this.bucket.scope('_default').query('SELECT * FROM `_default`')
+    let q = 'SELECT * FROM `_default` order by create_time desc'
+    if (filter.limit > 0) {
+      q += ` limit ${filter.limit}`
+    }
+    if (filter.offset > 0) {
+      q += ` offset ${filter.offset}`
+    }
+    const reservation = await this.bucket.scope('_default').query(q)
     return reservation.rows
   }
 

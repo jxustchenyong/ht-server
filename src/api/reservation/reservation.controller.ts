@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Request, Put, Param, Delete, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Body, Request, Put, Param, Query, UseGuards } from '@nestjs/common'
 import { AuthGuard } from '@nestjs/passport'
 import { PoliciesGuard } from 'src/casl/casl.guard'
 import { CheckPolicies } from 'src/casl/casl.decorator'
 import { Action, AppAbility } from 'src/casl/casl.type'
 import { ReservationService } from './reservation.service'
 import { Reservation } from './entities/reservation.entity'
+import { CreateReservationInput } from './dto/create-reservation.input'
 
 @Controller('reservation')
 export class ReservationController {
@@ -15,8 +16,9 @@ export class ReservationController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Create, Reservation))
   @UseGuards(AuthGuard('jwt'))
   @Post()
-  async createReservation(@Request() req, @Body() body) {
-    return await this.reservationService.createReservation(req.user.phone_number, body)
+  async createReservation(@Request() req, @Body() body: CreateReservationInput) {
+    body.status = 0
+    return await this.reservationService.createReservation(req.user, body)
   }
 
   // 管理员下单
@@ -25,7 +27,11 @@ export class ReservationController {
   @UseGuards(AuthGuard('jwt'))
   @Post('admin')
   async createReservationAdmin(@Body() body) {
-    return await this.reservationService.createReservation(body.phone_number, body)
+    const userInfo = {
+      name: body.name,
+      phone_number: body.phone_number
+    }
+    return await this.reservationService.createReservation(userInfo, body)
   }
 
   // 访客更新订单
@@ -70,8 +76,8 @@ export class ReservationController {
   @CheckPolicies((ability: AppAbility) => ability.can(Action.Manage, Reservation))
   @UseGuards(AuthGuard('jwt'))
   @Get()
-  async getAllOrder(@Request() req, @Body() body) {
-    return await this.reservationService.getAllReservation(body)
+  async getAllOrder(@Request() req, @Query() Query) {
+    return await this.reservationService.getAllReservation(Query)
   }
 
   // 管理员查看单条信息
