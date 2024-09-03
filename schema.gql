@@ -8,17 +8,22 @@ type Reservation {
   """Guest Name"""
   name: String!
 
+  """Guest Phone number"""
+  phone_number: String!
+
   """Guest contact Info"""
   contact_info: String!
 
   """Expected arrival time"""
-  arrival_time: String!
+  arrival_time: Date!
 
   """Reserved table size info"""
   table_size_info: String!
 
   """Status of the reservation"""
   status: Int!
+  create_time: Date!
+  update_time: Date!
 }
 
 """recipe"""
@@ -54,18 +59,26 @@ input NewRecipeInput {
 }
 
 input CreateReservationInput {
+  """Guest Name"""
+  name: String!
+
+  """Guest phone_number"""
+  phone_number: String!
   contact_info: String!
   arrival_time: String!
   table_size_info: String! = "normal"
-  status: Int! = 0
+  status: Int = 0
 }
 
 input UpdateReservationInput {
+  name: String!
+
+  """Guest phone_number"""
+  phone_number: String
   contact_info: String
   arrival_time: String
   table_size_info: String = "normal"
   status: Int! = 0
-  name: String!
 }
 
 type Subscription {

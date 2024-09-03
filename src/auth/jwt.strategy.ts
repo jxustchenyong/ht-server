@@ -6,6 +6,7 @@ import { jwtConstants } from './constants'
 export interface IPayload {
   id?: number
   phone_number: string
+  name: string
   entrance?: string
   status: boolean
 }
@@ -24,6 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       id: payload.id,
       phone_number: payload.phone_number,
+      name: payload.name,
       status: payload.status
     }
   }

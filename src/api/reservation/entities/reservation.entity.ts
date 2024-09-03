@@ -5,10 +5,13 @@ export class Reservation {
   @Field(() => String, { description: 'Guest Name' })
   name: string
 
+  @Field(() => String, { description: 'Guest Phone number' })
+  phone_number: string
+
   @Field(() => String, { description: 'Guest contact Info' })
   contact_info
 
-  @Field(() => String, { description: 'Expected arrival time' })
+  @Field(() => Date, { description: 'Expected arrival time' })
   arrival_time
 
   @Field(() => String, { description: 'Reserved table size info' })
@@ -16,4 +19,10 @@ export class Reservation {
 
   @Field(() => Int, { description: 'Status of the reservation' })
   status: number
+
+  @Field(() => Date)
+  create_time
+
+  @Field(() => Date)
+  update_time
 }
